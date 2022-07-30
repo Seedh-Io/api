@@ -7,3 +7,7 @@ class Validators:
     @staticmethod
     def mobile_validator(mobile: str):
         return mobile
+
+    @staticmethod
+    def password_validator(password: str):
+        return password
