@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-avua7=duw_qzx86+4@2n#vvgn11t$237kqwrr(loj3az7$&!)s
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -46,6 +44,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Middlewares from Libraries
+    'log_request_id.middleware.RequestIDMiddleware',
 ]
 
 ROOT_URLCONF = 'backend_api.urls'
@@ -70,17 +71,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend_api.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': "seedh",
+        'USER': "manav",
+        'PASSWORD': "manav",
+        'HOST': "localhost",
+        'PORT': "5432",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -100,7 +103,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -112,7 +114,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
@@ -122,3 +123,79 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+log_location = "./Logs"
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'filters': {
+        'request_id': {
+            '()': 'log_request_id.filters.RequestIDFilter'
+        }
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+        'json': {
+            '()': 'backend_api.formatter.CustomJSONFormatter.CustomJSONFormatter',
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'fileInfo': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': log_location + "/info.log",
+            'when': 'D',
+            'interval': 1,  # defaults to 1, only necessary for other values
+            'backupCount': 10,  # how many backup file to keep, 10 days
+            'formatter': 'verbose',
+        },
+        'fileWarning': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'D',
+            'interval': 1,  # defaults to 1, only necessary for other values
+            'backupCount': 10,  # how many backup file to keep, 10 days
+            'filename': log_location + "/warning.log",
+            'formatter': 'verbose'
+        },
+        'jsonFile': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'D',
+            'interval': 1,  # defaults to 1, only necessary for other values
+            'backupCount': 10,  # how many backup file to keep, 10 days
+            'filename': log_location + "/info_json.log",
+            'formatter': 'json',
+            'filters': ['request_id']
+        }
+
+    },
+    'loggers': {
+        # 'django': {
+        #     'handlers': ['console', 'fileInfo', 'fileWarning'],
+        #     'level': "DEBUG",
+        #     'propagate': True,
+        # },
+        '': {
+            'handlers': ['console', 'jsonFile'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['jsonFile'],
+            'level': 'DEBUG',
+        }
+    }
+}
