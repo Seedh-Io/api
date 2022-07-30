@@ -34,6 +34,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Custom Apps
+    'users',
+    'business',
+    'metadata'
 ]
 
 MIDDLEWARE = [
@@ -74,6 +79,7 @@ WSGI_APPLICATION = 'backend_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+# Todo add this to config
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -122,8 +128,9 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# todo Add this to config
 log_location = "./Logs"
 
 LOGGING = {
@@ -199,3 +206,6 @@ LOGGING = {
         }
     }
 }
+
+# Custom Authentication
+AUTH_USER_MODEL = 'users.UserModel'
