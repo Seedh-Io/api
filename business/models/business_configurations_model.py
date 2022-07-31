@@ -5,7 +5,7 @@ from business.apps import BusinessConfig as AppConfig
 from business.models import BusinessModel
 
 
-class BusinessConfigurationsModel(models.Model, BaseFields):
+class BusinessConfigurationsModel(BaseFields, models.Model):
     business = models.ForeignKey(BusinessModel, null=False, blank=False, on_delete=models.CASCADE)
     facebook_ads_config = models.JSONField(null=False, blank=False, default=dict)
     google_ads_config = models.JSONField(null=False, blank=False, default=dict)

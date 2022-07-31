@@ -8,7 +8,7 @@ from users.apps import UsersConfig as AppConfig
 
 
 # Create your models here.
-class UserModel(AbstractBaseUser, BaseFields):
+class UserModel(BaseFields, AbstractBaseUser):
     USERNAME_FIELD = 'email_id'
 
     first_name = models.CharField(max_length=100, null=False, blank=False)

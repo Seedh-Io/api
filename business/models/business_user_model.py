@@ -14,7 +14,7 @@ class ActiveUserManager(models.Manager):
         return self.get_queryset().filter(user_id=user_id).first()
 
 
-class BusinessUserModel(models.Model, BaseFields):
+class BusinessUserModel(BaseFields, models.Model):
     user_id = models.UUIDField(null=False, blank=False)
     business = models.ForeignKey(BusinessModel, null=False, blank=False, on_delete=models.DO_NOTHING)
     role = models.IntegerField(choices=BusinessRolesEnum.get_choices(), null=False, blank=False)
@@ -22,6 +22,7 @@ class BusinessUserModel(models.Model, BaseFields):
                                  default=BusinessUserStatusEnum.ACTIVE.val)
 
     active_objects = ActiveUserManager()
+    objects = models.Manager()
 
     class Meta:
         managed = True

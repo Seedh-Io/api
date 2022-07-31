@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from backend_api.validators import Validators
 from users.models import UserModel
+from users.service_utils import BusinessServiceUtils
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
@@ -28,4 +29,5 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user: UserModel = super(RegisterUserSerializer, self).create(validated_data)
         user.set_password(password)
         user.save()
+        BusinessServiceUtils(context=self.context).register_business(user)
         return user
