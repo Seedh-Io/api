@@ -1,7 +1,5 @@
-from rest_framework.exceptions import APIException, ErrorDetail
+from rest_framework.exceptions import ErrorDetail
 from rest_framework.views import exception_handler
-
-from backend_api.helpers.enum_helper import BaseEnum
 
 
 def extract_message_from_data(data: [dict, list, tuple]):
