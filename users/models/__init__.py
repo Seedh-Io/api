@@ -43,20 +43,16 @@ class UserModel(BaseFields, AbstractBaseUser):
         managed = True
         db_table = str(AppConfig.name)
 
-    @staticmethod
-    def get_token_expiry_time():
-        return DateTimeHelper.get_current_datetime() + timedelta(hours=1)
-
-    def get_jwt_details(self):
+    def __get_jwt_details(self):
         return settings.SECRET_KEY, "HS256", f"usr:{str(self.pk)}"
 
-    def generate_verification_token(self):
+    def __generate_verification_token(self):
         if self.is_verified:
             raise AccountAlreadyVerifiedException(Messages.verification_mail_already_sent())
         if self.last_verification_request and (
                 DateTimeHelper.get_current_datetime() - self.last_verification_request) <= timedelta(seconds=1):
             raise VerificationMailSentException(Messages.account_already_verified())
-        code, algorithm, audience = self.get_jwt_details()
+        code, algorithm, audience = self.__get_jwt_details()
         token = jwt.encode({"user_id": str(self.pk), "exp": self.get_token_expiry_time(), "aud": audience},
                            code, algorithm=algorithm)
         self.verification_count += 1
@@ -65,12 +61,16 @@ class UserModel(BaseFields, AbstractBaseUser):
         logging.info("verification_token_requested", {})
         return token
 
+    @staticmethod
+    def get_token_expiry_time():
+        return DateTimeHelper.get_current_datetime() + timedelta(hours=1)
+
     def verify_token(self, token):
         from jwt import ExpiredSignatureError
         if self.is_verified:
             raise VerificationTokenException("Account already verified...")
         try:
-            code, algorithm, audience = self.get_jwt_details()
+            code, algorithm, audience = self.__get_jwt_details()
             data = jwt.decode(token, code, algorithms=[algorithm], audience=audience)
             self.verified_on = DateTimeHelper.get_current_datetime()
             self.is_verified = True
@@ -85,10 +85,10 @@ class UserModel(BaseFields, AbstractBaseUser):
             raise (e if type(e) == APIException else VerificationTokenException(
                 Messages.some_error_occurred_contact_support()))
 
-    def send_email_for_token(self):
+    def send_email_for_verification(self):
         from django.core.mail import EmailMultiAlternatives
         from backend_api.helpers.url_helper import UrlHelper
-        token = self.generate_verification_token()
+        token = self.__generate_verification_token()
         url = UrlHelper.get_website_url(f"/{str(self.id)}/verify?token={token}")
         body = get_template("email_verification.jinja2").render({'url': url})
         msg = EmailMultiAlternatives(Messages.verification_email_subject(), body, settings.EMAIL_HOST_USER,

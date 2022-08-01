@@ -43,5 +43,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user: UserModel = super(RegisterUserSerializer, self).create(validated_data)
         user.set_password(password)
         user.save()
+        user.send_email_for_verification()
         BusinessServiceUtils(context=self.context).register_business(user)
         return user
