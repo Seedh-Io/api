@@ -22,6 +22,7 @@ sqlparse = "==0.4.2"
 urllib3 = "==1.26.11"
 install = "*"
 django-rest-knox = "*"
+pyjwt = "*"
 
 [dev-packages]
 

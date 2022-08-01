@@ -229,3 +229,10 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'seedh.acc@gmail.com'
 EMAIL_HOST_PASSWORD = 'znrkvjipvsicitzi'
+
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'backend_api.helpers.custom_exception_helper.custom_exception_handler',
+    'DEFAULT_RENDERER_CLASSES': (
+        'backend_api.formatter.JSONResponseFormatter.JSONResponseFormatter',
+    )
+}
