@@ -1,4 +1,5 @@
-from rest_framework.exceptions import ErrorDetail
+from rest_framework import status
+from rest_framework.exceptions import ErrorDetail, APIException
 from rest_framework.views import exception_handler
 
 
@@ -31,3 +32,23 @@ def custom_exception_handler(exc, context):
             }
         }
     return response
+
+
+class CustomApiException(APIException):
+    detail = None
+    status_code = None
+
+    # create constructor
+    def __init__(self, status_code=None, message=None):
+        # override public fields
+        CustomApiException.status_code = status.HTTP_400_BAD_REQUEST if status_code is None else status_code
+        CustomApiException.detail = message
+
+
+class VerificationMailSentException(CustomApiException): pass
+
+
+class AccountAlreadyVerifiedException(CustomApiException): pass
+
+
+class VerificationTokenException(CustomApiException): pass

@@ -2,7 +2,7 @@ from json_log_formatter import JSONFormatter
 import json
 
 
-class CustomJSONFormatter(JSONFormatter):
+class CustomJSONLoggerFormatter(JSONFormatter):
     def json_record(self, message, extra, record) -> dict:
         extra["level"] = record.levelname
         extra["module"] = record.module
@@ -19,4 +19,4 @@ class CustomJSONFormatter(JSONFormatter):
                 extra["body"] = json.loads(extra["body"].decode('utf8'))
             except:
                 extra["body"] = extra["body"]
-        return super(CustomJSONFormatter, self).json_record(message, extra, record)
+        return super(CustomJSONLoggerFormatter, self).json_record(message, extra, record)

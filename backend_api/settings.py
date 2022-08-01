@@ -158,7 +158,7 @@ LOGGING = {
             'style': '{',
         },
         'json': {
-            '()': 'backend_api.formatter.CustomJSONFormatter.CustomJSONFormatter',
+            '()': 'backend_api.formatter.CustomJSONLoggerFormatter.CustomJSONLoggerFormatter',
         }
     },
     'handlers': {
@@ -236,3 +236,6 @@ REST_FRAMEWORK = {
         'backend_api.formatter.JSONResponseFormatter.JSONResponseFormatter',
     )
 }
+
+WEBSITE_HOST = "localhost:8000"
+ENV = "development"
