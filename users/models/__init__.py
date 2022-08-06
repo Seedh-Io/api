@@ -58,7 +58,7 @@ class UserModel(BaseFields, AbstractBaseUser):
         self.verification_count += 1
         self.last_verification_request = DateTimeHelper.get_current_datetime()
         self.save()
-        logging.info("verification_token_requested", {})
+        logging.info("verification_token_requested", extra={"user_id": self.pk})
         return token
 
     @staticmethod

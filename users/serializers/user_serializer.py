@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.exceptions import APIException
 
 from backend_api.validators import Validators
 from users.models import UserModel
@@ -46,3 +47,21 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user.send_email_for_verification()
         BusinessServiceUtils(context=self.context).register_business(user)
         return user
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True, allow_null=False, write_only=True)
+    message = serializers.CharField(read_only=True)
+
+    def update(self, instance, validated_data):
+        from backend_api.constants.messages import Messages
+        validated_data["message"] = Messages.account_verified()
+        return validated_data
+
+    def validate(self, attrs):
+        self.instance.verify_token(attrs['token'])
+        return attrs
+
+    def create(self, validated_data):
+        from backend_api.helpers.custom_exception_helper import CustomApiException
+        raise CustomApiException("Method Not allowed")

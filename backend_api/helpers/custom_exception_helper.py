@@ -39,7 +39,7 @@ class CustomApiException(APIException):
     status_code = None
 
     # create constructor
-    def __init__(self, status_code=None, message=None):
+    def __init__(self, message=None, status_code=None):
         # override public fields
         CustomApiException.status_code = status.HTTP_400_BAD_REQUEST if status_code is None else status_code
         CustomApiException.detail = message
@@ -52,3 +52,6 @@ class AccountAlreadyVerifiedException(CustomApiException): pass
 
 
 class VerificationTokenException(CustomApiException): pass
+
+
+class UserBusinessNotFoundException(CustomApiException): pass

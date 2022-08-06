@@ -27,3 +27,8 @@ class BusinessStatusEnum(BaseEnum):
     DISABLED = ("Disabled", 2)
     BLOCKED = ("Blocked", 3)
     DELETED = ("Deleted", 4)
+
+
+class BusinessReferenceTypeEnum(BaseEnum):
+    ORDER = ("Order", 1)
+    RECHARGE = ("Recharge", 2)

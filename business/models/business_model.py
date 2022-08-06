@@ -7,6 +7,7 @@ from django.db.models import JSONField
 from django.dispatch import receiver
 
 from backend_api.fields.base_fields import BaseFields
+from backend_api.validators import Validators
 from business.apps import BusinessConfig as AppConfig
 from business.enum import BusinessStatusEnum, BusinessRolesEnum
 
@@ -18,6 +19,7 @@ class BusinessModel(BaseFields, models.Model):
     image_id = models.UUIDField(null=True, blank=False)
     status = models.IntegerField(null=False, blank=False, choices=BusinessStatusEnum.get_choices(),
                                  default=BusinessStatusEnum.ACTIVE.val)
+    available_credits = models.IntegerField(null=False, blank=False, default=0, validators=[Validators.min_0_validator])
     business_verified = models.BooleanField(default=False, null=False, blank=False)
 
     class Meta:

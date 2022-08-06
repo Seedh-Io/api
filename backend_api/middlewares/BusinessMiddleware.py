@@ -13,5 +13,8 @@ class BusinessMiddleware:
         path = request.path
         if re.search("/api/business/*", path) and request.user and type(request.user) != AnonymousUser:
             from business.repository import BusinessRepository
-            request.business = BusinessRepository.get_active_business_for_user(request.user.id)
+            business = BusinessRepository.get_active_business_for_user(request.user.id)
+            if not business:
+                from backend_api.helpers.custom_exception_helper import UserBusinessNotFoundException
+                raise UserBusinessNotFoundException("")
         return response

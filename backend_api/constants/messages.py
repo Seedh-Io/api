@@ -23,3 +23,11 @@ class Messages:
     @staticmethod
     def account_already_verified():
         return "Account already verified"
+
+    @staticmethod
+    def account_verified():
+        return "Account Verified"
+
+    @staticmethod
+    def verification_email_sent():
+        return "Verification Email Sent"
