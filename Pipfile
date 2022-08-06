@@ -23,6 +23,7 @@ urllib3 = "==1.26.11"
 install = "*"
 django-rest-knox = "*"
 pyjwt = "*"
+crypto = "*"
 
 [dev-packages]
 
