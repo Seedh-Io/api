@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     # Custom Apps
     'users',
     'business',
-    'metadata'
+    'metadata',
+    'packages',
 ]
 
 MIDDLEWARE = [

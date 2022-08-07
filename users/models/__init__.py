@@ -10,7 +10,7 @@ from django.template.loader import get_template
 from jwt import InvalidTokenError
 
 from backend_api.constants.messages import Messages
-from backend_api.fields.base_fields import BaseFields
+from backend_api.fields.base_model_fields import BaseModelFields
 from backend_api.helpers.custom_exception_helper import VerificationMailSentException, AccountAlreadyVerifiedException, \
     VerificationTokenException
 from backend_api.helpers.datetime_helper import DateTimeHelper
@@ -19,7 +19,7 @@ from users.apps import UsersConfig as AppConfig
 
 
 # Create your models here.
-class UserModel(BaseFields, AbstractBaseUser):
+class UserModel(BaseModelFields, AbstractBaseUser):
     USERNAME_FIELD = 'email_id'
 
     first_name = models.CharField(max_length=100, null=False, blank=False)
@@ -48,10 +48,10 @@ class UserModel(BaseFields, AbstractBaseUser):
 
     def __generate_verification_token(self):
         if self.is_verified:
-            raise AccountAlreadyVerifiedException(Messages.verification_mail_already_sent())
+            raise AccountAlreadyVerifiedException(Messages.account_already_verified())
         if self.last_verification_request and (
                 DateTimeHelper.get_current_datetime() - self.last_verification_request) <= timedelta(seconds=1):
-            raise VerificationMailSentException(Messages.account_already_verified())
+            raise VerificationMailSentException(Messages.verification_mail_already_sent())
         code, algorithm, audience = self.__get_jwt_details()
         token = jwt.encode({"user_id": str(self.pk), "exp": self.get_token_expiry_time(), "aud": audience},
                            code, algorithm=algorithm)
@@ -89,9 +89,12 @@ class UserModel(BaseFields, AbstractBaseUser):
         from django.core.mail import EmailMultiAlternatives
         from backend_api.helpers.url_helper import UrlHelper
         token = self.__generate_verification_token()
-        url = UrlHelper.get_website_url(f"/{str(self.id)}/verify?token={token}")
-        body = get_template("email_verification.jinja2").render({'url': url})
-        msg = EmailMultiAlternatives(Messages.verification_email_subject(), body, settings.EMAIL_HOST_USER,
-                                     [self.email_id])
-        msg.attach_alternative(body, "text/html")
-        msg.send()
+        if settings.DEBUG:
+            logging.info("token", extra={'token': token})
+        else:
+            url = UrlHelper.get_website_url(f"/{str(self.id)}/verify?token={token}")
+            body = get_template("email_verification.jinja2").render({'url': url})
+            msg = EmailMultiAlternatives(Messages.verification_email_subject(), body, settings.EMAIL_HOST_USER,
+                                         [self.email_id])
+            msg.attach_alternative(body, "text/html")
+            msg.send()

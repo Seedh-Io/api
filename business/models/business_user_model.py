@@ -1,6 +1,6 @@
 from django.db import models
 
-from backend_api.fields.base_fields import BaseFields
+from backend_api.fields.base_model_fields import BaseModelFields
 from business.enum import BusinessRolesEnum, BusinessUserStatusEnum
 from business.models import BusinessModel
 from business.apps import BusinessConfig as AppConfig
@@ -14,7 +14,7 @@ class ActiveUserManager(models.Manager):
         return self.get_queryset().filter(user_id=user_id).first()
 
 
-class BusinessUserModel(BaseFields, models.Model):
+class BusinessUserModel(BaseModelFields, models.Model):
     user_id = models.UUIDField(null=False, blank=False)
     business = models.ForeignKey(BusinessModel, null=False, blank=False, on_delete=models.DO_NOTHING)
     role = models.IntegerField(choices=BusinessRolesEnum.get_choices(), null=False, blank=False)

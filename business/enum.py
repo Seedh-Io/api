@@ -19,14 +19,12 @@ class BusinessUserStatusEnum(BaseEnum):
     ACTIVE = ("Active", 1)
     DISABLED = ("Disabled", 2)
     BLOCKED = ("Blocked", 3)
-    DELETED = ("Deleted", 4)
 
 
 class BusinessStatusEnum(BaseEnum):
     ACTIVE = ("Active", 1)
     DISABLED = ("Disabled", 2)
     BLOCKED = ("Blocked", 3)
-    DELETED = ("Deleted", 4)
 
 
 class BusinessReferenceTypeEnum(BaseEnum):
