@@ -16,22 +16,29 @@ Including another URLconf
 from django.urls import path, include
 
 from business.urls import BusinessUrls, AdminBusinessUrls
+from orders.urls import OrderAdminUrls, OrderBusinessUrls
 from packages.urls import PackageBusinessUrls, PackageAdminUrls
 from users.urls import adminUrls as UserAdminUrls, businessUrls as UserBusinessUrls
 
-adminUrls = [
-    path("user/", include((UserAdminUrls, "users"), namespace="user")),
-    path("business/", include((BusinessUrls, "business"), namespace="business")),
-    path("packages/", include((PackageAdminUrls, "packages"), namespace="packages"))
-]
+register_urls = {
+    "user": (UserAdminUrls, UserBusinessUrls),
+    "business": (AdminBusinessUrls, BusinessUrls),
+    "packages": (PackageAdminUrls, PackageBusinessUrls),
+    "orders": (OrderAdminUrls, OrderBusinessUrls)
+}
 
-businessUrls = [
-    path("user/", include((UserBusinessUrls, "users"), namespace="user")),
-    path("business/", include((AdminBusinessUrls, "business"), namespace="business")),
-    path("packages/", include((PackageBusinessUrls, "packages"), namespace="packages"))
-]
+
+def generate_urls(url_type):
+    urls = []
+    for register_url in register_urls:
+        index = 1 if url_type == "business" else 0
+        url = "" if url_type == register_url else register_url + "/"
+        url_obj = register_urls[register_url][index]
+        urls.append(path(f"{url}", include((url_obj, register_url), namespace=register_url)))
+    return urls
+
 
 urlpatterns = [
-    path("api/admin/", include((adminUrls, "backend_api"), namespace="admin")),
-    path("api/business/", include((businessUrls, "backend_api"), namespace="business")),
+    path("api/admin/", include((generate_urls("admin"), "backend_api"), namespace="admin")),
+    path("api/business/", include((generate_urls("business"), "backend_api"), namespace="business")),
 ]

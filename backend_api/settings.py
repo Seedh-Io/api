@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'business',
     'metadata',
     'packages',
+    'orders',
+    'payments'
 ]
 
 MIDDLEWARE = [
@@ -57,9 +59,6 @@ MIDDLEWARE = [
 
     # Middlewares from Libraries
     'log_request_id.middleware.RequestIDMiddleware',
-
-    # Custom Middleware
-    'backend_api.middlewares.BusinessMiddleware.BusinessMiddleware',
 ]
 
 ROOT_URLCONF = 'backend_api.urls'

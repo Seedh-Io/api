@@ -11,7 +11,7 @@ class BaseEnum(Enum):
     def get_choices(cls):
         choice = []
         for key in cls:
-            choice.append((key.display_name, key.val))
+            choice.append((key.val, key.display_name))
         return choice
 
     @classmethod

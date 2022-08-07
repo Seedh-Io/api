@@ -19,3 +19,15 @@ class PackagesModel(BaseModelFields, models.Model):
     class Meta:
         managed = True
         db_table = str(AppConfig.name)
+
+    @property
+    def default_credits(self):
+        return self.configuration["value"]["default_credits"]
+
+    @property
+    def credit_multiplier(self):
+        return self.configuration["value"]["credit_multiplier"]
+
+    @property
+    def duration_in_seconds(self):
+        return self.configuration["value"]["duration_in_seconds"]

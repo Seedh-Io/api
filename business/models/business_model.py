@@ -1,15 +1,18 @@
 import logging
+from datetime import datetime
 
 from django.db import models
 from django.db.models.signals import post_save
 # Create your models here.
 from django.db.models import JSONField
 from django.dispatch import receiver
+from django.utils import timezone
 
 from backend_api.fields.base_model_fields import BaseModelFields
 from backend_api.validators import Validators
 from business.apps import BusinessConfig as AppConfig
 from business.enum import BusinessStatusEnum, BusinessRolesEnum
+from packages.models import PackagesModel
 
 
 class BusinessModel(BaseModelFields, models.Model):
@@ -21,10 +24,21 @@ class BusinessModel(BaseModelFields, models.Model):
                                  default=BusinessStatusEnum.ACTIVE.val)
     available_credits = models.IntegerField(null=False, blank=False, default=0, validators=[Validators.min_0_validator])
     business_verified = models.BooleanField(default=False, null=False, blank=False)
+    active_package_id = models.UUIDField(null=True, blank=False)
+    active_package_expiry_date_time = models.DateTimeField(null=True, blank=False)
 
     class Meta:
         managed = True
         db_table = str(AppConfig.name)
+
+    @property
+    def active_package(self) -> PackagesModel | None:
+        package_id = self.active_package_id
+        if package_id:
+            package_id = None if timezone.now() > self.active_package_expiry_date_time else package_id
+        if package_id:
+            return PackagesModel.objects.get(id=package_id)
+        return None
 
 
 @receiver(post_save, sender=BusinessModel)

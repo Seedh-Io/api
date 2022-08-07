@@ -36,6 +36,8 @@ class UserModel(BaseModelFields, AbstractBaseUser):
     verified_on = models.DateTimeField(null=True, blank=False, default=None)
     last_verification_request = models.DateTimeField(null=True, blank=False)
     verification_count = models.IntegerField(default=0, null=False, blank=False)
+    is_admin = models.BooleanField(null=False, blank=False, default=False)
+    is_staff = models.BooleanField(null=False, blank=False, default=False)
 
     objects = UserManager()
 
@@ -98,3 +100,6 @@ class UserModel(BaseModelFields, AbstractBaseUser):
                                          [self.email_id])
             msg.attach_alternative(body, "text/html")
             msg.send()
+
+    def is_staff_user(self):
+        return bool(self.is_staff or self.is_admin)

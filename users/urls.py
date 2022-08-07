@@ -1,12 +1,12 @@
 from django.urls import path
 from knox import views as knox_views
 
-from users.views import RegisterUserView, LoginView, VerifyEmailView, RequestVerificationEmailView
+from users.views import RegisterUserView, LoginView, VerifyEmailView, RequestVerificationEmailView, AdminLoginView
 
 adminUrls = [
-
+    path("login", AdminLoginView.as_view(), name="login"),
+    path("logout", knox_views.LogoutView.as_view(), name="logout"),
 ]
-
 
 businessUrls = [
     path("register", RegisterUserView.as_view(), name="register"),

@@ -21,7 +21,7 @@ class BaseDataObject(metaclass=DataObject):
         attributes = dir(self)
         final_dict = {}
         for attr in attributes:
-            if not attr.startswith("_") and attr not in ["to_dict", "to_json"]:
+            if not attr.startswith("_") and attr not in ["to_dict", "to_json", "get_dto_obj"]:
                 value = getattr(self, attr)
                 type_value = type(value)
                 if type_value == datetime:

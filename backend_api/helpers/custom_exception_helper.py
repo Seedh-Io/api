@@ -45,13 +45,17 @@ class CustomApiException(APIException):
         CustomApiException.detail = message
 
 
-class VerificationMailSentException(CustomApiException): pass
+class VerificationMailSentException(CustomApiException):
+    pass
 
 
-class AccountAlreadyVerifiedException(CustomApiException): pass
+class AccountAlreadyVerifiedException(CustomApiException):
+    pass
 
 
-class VerificationTokenException(CustomApiException): pass
+class VerificationTokenException(CustomApiException):
+    pass
 
 
-class UserBusinessNotFoundException(CustomApiException): pass
+class UserBusinessNotFoundException(CustomApiException):
+    pass

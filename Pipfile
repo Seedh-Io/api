@@ -24,6 +24,7 @@ install = "*"
 django-rest-knox = "*"
 pyjwt = "*"
 crypto = "*"
+razorpay = "*"
 
 [dev-packages]
 
