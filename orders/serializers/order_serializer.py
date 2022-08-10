@@ -79,7 +79,14 @@ class BaseOrderSerializerMixin(serializers.Serializer):
         from payments.providers import BaseProvider
         order = self.create_order()
         amount_in_cents = order.sale_price_in_cents
-        payment_obj = BaseProvider.provider().obj.create_payment_order(amount_in_cents, order.order_id)
+        try:
+            payment_obj = BaseProvider.provider().obj.create_payment_order(amount_in_cents, order.order_id)
+            order.mark_as_processing()
+            order.save()
+        except Exception as e:
+            order.mark_as_issue()
+            order.save()
+            raise e
         validated_data["order"] = order
         validated_data['payment_gateway_id'] = payment_obj.provider_id
         validated_data['payment_gateway_order_id'] = payment_obj.provider_order_id

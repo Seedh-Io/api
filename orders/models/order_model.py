@@ -1,6 +1,8 @@
+import logging
 import random
 
 from django.db import models
+from django_fsm import transition, FSMIntegerField
 
 from backend_api.fields.base_model_fields import BaseModelFields, BaseModelManager
 from orders.apps import OrdersConfig as AppConfig
@@ -23,8 +25,8 @@ class OrderModel(BaseModelFields, models.Model):
     offer_discount_in_cents = models.BigIntegerField(null=False, blank=False)
     coupon_discount_in_cents = models.BigIntegerField(null=False, blank=False, default=0)
     sale_price_in_cents = models.BigIntegerField(null=False, blank=False)
-    status = models.IntegerField(default=OrderStateEnum.CREATED.val, null=False, blank=False,
-                                 choices=OrderStateEnum.get_choices())
+    status = FSMIntegerField(default=OrderStateEnum.CREATED.val, null=False, blank=False,
+                             choices=OrderStateEnum.get_choices())
     package_id = models.UUIDField(null=True, blank=False)
     order_type = models.IntegerField(null=False, blank=False, choices=OrderTypeEnum.get_choices())
 
@@ -33,3 +35,20 @@ class OrderModel(BaseModelFields, models.Model):
     class Meta:
         managed = True
         db_table = str(AppConfig.name)
+
+    @transition(field=status, source=OrderStateEnum.CREATED.val, target=OrderStateEnum.PROCESSING.val)
+    def mark_as_processing(self):
+        logging.info("mark_order_as_processing", extra={"order_id": self.pk})
+
+    @transition(field=status, source=OrderStateEnum.PROCESSING.val, target=OrderStateEnum.ISSUE.val)
+    def mark_as_issue(self, msg=""):
+        logging.info("mark_order_as_processing", extra={"order_id": self.pk, "msg": msg})
+
+    @transition(field=status,
+                source=[OrderStateEnum.PROCESSING.val, OrderStateEnum.ISSUE.val, OrderStateEnum.FAILED.val],
+                target=OrderStateEnum.COMPLETED.val)
+    def mark_as_completed(self):
+        logging.info("mark_order_as_completed", extra={"order_id": self.pk, })
+
+
+    @transition(field=status, source=OrderStateEnum.COMPLETED.val, target=OrderStateEnum.)
