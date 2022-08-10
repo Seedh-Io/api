@@ -25,6 +25,7 @@ django-rest-knox = "*"
 pyjwt = "*"
 crypto = "*"
 razorpay = "*"
+django-fsm = "*"
 
 [dev-packages]
 

@@ -59,3 +59,6 @@ class VerificationTokenException(CustomApiException):
 
 class UserBusinessNotFoundException(CustomApiException):
     pass
+
+
+class PGOrderCreationFailed(CustomApiException): pass

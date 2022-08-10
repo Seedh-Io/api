@@ -1,34 +1,33 @@
 from abc import ABC, abstractmethod
 
+from backend_api.helpers.custom_exception_helper import CustomApiException
+from payments.dto import PaymentProviderResponseDTO
+from payments.enum import PaymentStatusEnum
+from payments.enum import PaymentProvidersEnum, SupportedPaymentCurrenciesEnum
+
 
 class BaseProvider(ABC):
 
-    def __init__(self, amount: int, order_id: str, currency: str):
-        from payments.enum import SupportedPaymentCurrenciesEnum
-        self.__amount = amount
-        self.__order_id = order_id
-        self.__currency = SupportedPaymentCurrenciesEnum.search_by_value(currency)
-        self.__order_obj = None
+    @abstractmethod
+    def create_payment_order(self, amount_in_cents: int, order_reference_id: str,
+                             currency: SupportedPaymentCurrenciesEnum = SupportedPaymentCurrenciesEnum.INR) -> PaymentProviderResponseDTO: pass
 
     @abstractmethod
-    def create_payment_order(self): pass
+    def verify_payment(self, pg_id: str, payment_id: str, signature: str, success: bool) -> PaymentStatusEnum: pass
+
+    @abstractmethod
+    def get_provider(self) -> PaymentProvidersEnum: pass
+
+    def verify(self, pg_id: str, payment_id: str, signature: str, success: bool) -> PaymentStatusEnum:
+        payment_status = self.verify_payment(pg_id, payment_id, signature, success)
+        from payments.models import PaymentsModel
+        payment_obj = PaymentsModel.objects.get_payment_by_pg(payment_status, pg_id)
+        payment_obj.status = payment_status.val
+        payment_obj.save()
+        return payment_status
 
     @staticmethod
-    @abstractmethod
-    def verify_payment(order_id: str, payment_id: str, signature: str): pass
-
-    @property
-    def order_id(self):
-        return self.__order_id
-
-    @property
-    def amount(self):
-        return self.__amount
-
-    @property
-    def currency(self):
-        return self.__currency
-
-    @property
-    def order_obj(self):
-        return self.__order_obj
+    def provider(provider=None) -> PaymentProvidersEnum:
+        if provider is not None and type(provider) != PaymentProvidersEnum:
+            raise CustomApiException("Invalid Provider Type")
+        return provider or PaymentProvidersEnum.RAZORPAY

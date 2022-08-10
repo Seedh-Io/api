@@ -31,3 +31,7 @@ class Messages:
     @staticmethod
     def verification_email_sent():
         return "Verification Email Sent"
+
+    @staticmethod
+    def error_in_initiating_payment():
+        return "Some error in initiating payment"
