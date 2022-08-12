@@ -1,7 +1,9 @@
 from rest_framework.exceptions import NotFound
 
+from backend_api.helpers.service_helper import BaseService
 
-class PackagesRepository:
+
+class PackagesRepository(BaseService):
 
     @staticmethod
     def get_package_by_id(package_id):

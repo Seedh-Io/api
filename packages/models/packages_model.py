@@ -31,3 +31,6 @@ class PackagesModel(BaseModelFields, models.Model):
     @property
     def duration_in_seconds(self):
         return self.configuration["value"]["duration_in_seconds"]
+
+    def get_credits_when_recharge(self, recharge_amount):
+        return recharge_amount * self.credit_multiplier

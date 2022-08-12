@@ -1,12 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from rest_framework import serializers
 
 from business.models import BusinessModel
 from orders.enum import OrderTypeEnum
 from orders.models import OrderModel
+from orders.service_utils import PaymentUtils
 from payments.enum import PaymentProvidersEnum, SupportedPaymentCurrenciesEnum
 from users.models import UserModel
+from payments.enum import PaymentStatusEnum
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -37,6 +39,7 @@ class BaseOrderSerializerMixin(serializers.Serializer):
     payment_gateway_amount_in_cents = serializers.IntegerField(read_only=True)
     payment_gateway_currency = serializers.ChoiceField(choices=SupportedPaymentCurrenciesEnum.get_choices(),
                                                        read_only=True)
+    payment_id = serializers.UUIDField(read_only=True)
     order = OrderSerializer(read_only=True)
 
     def __init__(self, *args, **kwargs):
@@ -63,7 +66,13 @@ class BaseOrderSerializerMixin(serializers.Serializer):
 
     @staticmethod
     @abstractmethod
-    def get_order_type() -> OrderTypeEnum: pass
+    def get_order_type() -> OrderTypeEnum:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_collection_amount(order: OrderModel):
+        pass
 
     def get_base_order_data(self) -> dict:
         return {
@@ -76,11 +85,10 @@ class BaseOrderSerializerMixin(serializers.Serializer):
         self.order_data = order_data
 
     def create(self, validated_data):
-        from payments.providers import BaseProvider
         order = self.create_order()
-        amount_in_cents = order.sale_price_in_cents
+        amount_in_cents = self.get_collection_amount(order)
         try:
-            payment_obj = BaseProvider.provider().obj.create_payment_order(amount_in_cents, order.order_id)
+            payment_obj = PaymentUtils(context=self.context).initiate_payment(order.pk, amount_in_cents)
             order.mark_as_processing()
             order.save()
         except Exception as e:
@@ -88,10 +96,11 @@ class BaseOrderSerializerMixin(serializers.Serializer):
             order.save()
             raise e
         validated_data["order"] = order
-        validated_data['payment_gateway_id'] = payment_obj.provider_id
-        validated_data['payment_gateway_order_id'] = payment_obj.provider_order_id
-        validated_data['payment_gateway_amount_in_cents'] = amount_in_cents
-        validated_data['payment_gateway_currency'] = SupportedPaymentCurrenciesEnum.INR.val
+        validated_data['payment_gateway_id'] = payment_obj.payment.provider
+        validated_data['payment_gateway_order_id'] = payment_obj.pg_response.provider_order_id
+        validated_data['payment_gateway_amount_in_cents'] = payment_obj.pg_response.amount_in_cents
+        validated_data['payment_gateway_currency'] = payment_obj.payment.currency
+        validated_data["payment_id"] = payment_obj.payment.id
         return validated_data
 
     def update(self, instance, validated_data):
@@ -108,7 +117,7 @@ class PackageOrderSerializer(BaseOrderSerializerMixin):
 
     def validate(self, attrs):
         from orders.service_utils import PackagesUtils
-        package = PackagesUtils.get_package_by_id(attrs['package_id'])
+        package = PackagesUtils().get_package_by_id(attrs['package_id'])
         self.set_order_data({
             "package_id": package.pk,
             "list_price_in_cents": package.list_price_in_cents,
@@ -118,6 +127,10 @@ class PackageOrderSerializer(BaseOrderSerializerMixin):
         })
         return attrs
 
+    @staticmethod
+    def get_collection_amount(order: OrderModel):
+        return order.sale_price_in_cents
+
 
 class RechargeOrderSerializer(BaseOrderSerializerMixin):
     recharge_amount = serializers.IntegerField(allow_null=False, min_value=1)
@@ -125,6 +138,10 @@ class RechargeOrderSerializer(BaseOrderSerializerMixin):
     @staticmethod
     def get_order_type() -> OrderTypeEnum:
         return OrderTypeEnum.RECHARGE
+
+    @staticmethod
+    def get_collection_amount(order: OrderModel):
+        return order.list_price_in_cents
 
     def validate(self, attrs):
         recharge_amount = attrs['recharge_amount']
@@ -135,3 +152,31 @@ class RechargeOrderSerializer(BaseOrderSerializerMixin):
             "offer_discount_in_cents": 0,
         })
         return attrs
+
+
+class UpdateOrderStatusSerializer(serializers.Serializer):
+    payment_status = serializers.ChoiceField(choices=PaymentStatusEnum.get_choices(), allow_null=False, required=True,
+                                             allow_blank=False, write_only=True)
+    order = OrderSerializer(read_only=True)
+
+    def update(self, instance: OrderModel, validated_data):
+        payment_state = PaymentStatusEnum.search_by_value(validated_data['payment_status'])
+        match payment_state:
+            case PaymentStatusEnum.FAILED:
+                instance.mark_as_failed()
+            case PaymentStatusEnum.PROCESSING:
+                pass
+            case PaymentStatusEnum.REFUNDED:
+                instance.refund_order()
+            case PaymentStatusEnum.SUCCESS:
+                instance.mark_as_completed()
+            case PaymentStatusEnum.FLAGGED:
+                instance.mark_as_issue()
+            case PaymentStatusEnum.INITIATED:
+                pass
+        instance.save()
+        return {"order": instance}
+
+    def create(self, validated_data):
+        from backend_api.helpers.custom_exception_helper import CustomApiException
+        raise CustomApiException("Method not allowed")

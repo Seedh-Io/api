@@ -18,13 +18,15 @@ from django.urls import path, include
 from business.urls import BusinessUrls, AdminBusinessUrls
 from orders.urls import OrderAdminUrls, OrderBusinessUrls
 from packages.urls import PackageBusinessUrls, PackageAdminUrls
-from users.urls import adminUrls as UserAdminUrls, businessUrls as UserBusinessUrls
+from users.urls import UserAdminUrls, UserBusinessUrls
+from payments.urls import PaymentAdminUrls, PaymentBusinessUrls
 
 register_urls = {
     "user": (UserAdminUrls, UserBusinessUrls),
     "business": (AdminBusinessUrls, BusinessUrls),
     "packages": (PackageAdminUrls, PackageBusinessUrls),
-    "orders": (OrderAdminUrls, OrderBusinessUrls)
+    "orders": (OrderAdminUrls, OrderBusinessUrls),
+    "pay,ent": (PaymentAdminUrls, PaymentBusinessUrls),
 }
 
 

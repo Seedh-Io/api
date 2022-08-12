@@ -6,7 +6,7 @@ from packages.models import PackagesModel
 
 class PackageConfigurationSerializer(serializers.Serializer):
     default_credits = serializers.JSONField(allow_null=False, default=0)
-    credit_multiplier = serializers.FloatField(allow_null=False, default=1.0)
+    credit_multiplier = serializers.FloatField(allow_null=False, default=1.0, min_value=1.0)
     duration_in_seconds = serializers.IntegerField(allow_null=False)
 
 

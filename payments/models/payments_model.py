@@ -15,7 +15,7 @@ class PaymentsModel(BaseModelFields, models.Model):
     order_id = models.UUIDField(null=False, blank=False)
     amount_in_cents = models.BigIntegerField(null=False, blank=False)
     provider = models.IntegerField(choices=PaymentProvidersEnum.get_choices(), null=False, blank=False)
-    provider_id = models.UUIDField(null=False, blank=False)
+    provider_id = models.UUIDField(null=True, blank=False)
     status = models.IntegerField(null=False, choices=PaymentStatusEnum.get_choices(),
                                  default=PaymentStatusEnum.INITIATED.val)
     currency = models.CharField(choices=SupportedPaymentCurrenciesEnum.get_choices(), max_length=5, null=False,

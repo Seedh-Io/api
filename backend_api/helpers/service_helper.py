@@ -3,7 +3,7 @@ from rest_framework.serializers import Serializer
 
 class BaseService:
 
-    def __init__(self, context):
+    def __init__(self, context=None):
         self.__context = context
 
     @property

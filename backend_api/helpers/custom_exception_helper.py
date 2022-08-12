@@ -61,4 +61,9 @@ class UserBusinessNotFoundException(CustomApiException):
     pass
 
 
-class PGOrderCreationFailed(CustomApiException): pass
+class PGOrderCreationFailed(CustomApiException):
+    pass
+
+
+class PGInvalidVerificationResponse(CustomApiException):
+    pass

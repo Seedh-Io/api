@@ -40,6 +40,9 @@ class BusinessModel(BaseModelFields, models.Model):
             return PackagesModel.objects.get(id=package_id)
         return None
 
+    def activate_package(self, package_id):
+        self.active_package_id = package_id
+
 
 @receiver(post_save, sender=BusinessModel)
 def create_business_user(sender, instance: BusinessModel, created: bool, **kwargs):
