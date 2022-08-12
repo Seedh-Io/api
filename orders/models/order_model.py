@@ -49,7 +49,7 @@ class OrderModel(BaseModelFields, models.Model):
     @transition(field=status,
                 source=[OrderStateEnum.PROCESSING.val, OrderStateEnum.ISSUE.val, OrderStateEnum.FAILED.val],
                 target=OrderStateEnum.COMPLETED.val, on_error=OrderStateEnum.FAILED.val)
-    def mark_as_completed(self, context):
+    def mark_as_completed(self, context=None):
         logging.info("mark_order_as_completed", extra={"order_id": self.pk, })
 
         def add_credit_for_business(credit):

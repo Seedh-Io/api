@@ -26,7 +26,7 @@ register_urls = {
     "business": (AdminBusinessUrls, BusinessUrls),
     "packages": (PackageAdminUrls, PackageBusinessUrls),
     "orders": (OrderAdminUrls, OrderBusinessUrls),
-    "pay,ent": (PaymentAdminUrls, PaymentBusinessUrls),
+    "payment": (PaymentAdminUrls, PaymentBusinessUrls),
 }
 
 

@@ -10,7 +10,7 @@ class CreateBusinessSerializers(serializers.ModelSerializer):
         fields = ('name', 'business_owner')
 
 
-class ActivatePackageForBusiness(serializers.Serializer):
+class ActivatePackageForBusiness(serializers.ModelSerializer):
     active_package_id = serializers.UUIDField(allow_null=False, required=True, write_only=True)
     active_package_expiry_date_time = serializers.DateTimeField(allow_null=False, required=True, write_only=True)
 

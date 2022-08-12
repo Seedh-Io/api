@@ -11,7 +11,7 @@ class ActiveUserManager(models.Manager):
         return super().get_queryset().filter(status=BusinessUserStatusEnum.ACTIVE.val)
 
     def get_active_business_for_user(self, user_id: str) -> 'BusinessUserModel':
-        return self.get_queryset().filter(user_id=user_id).first()
+        return self.get_queryset().filter(user_id=user_id).first().business
 
 
 class BusinessUserModel(BaseModelFields, models.Model):

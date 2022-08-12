@@ -169,7 +169,7 @@ class UpdateOrderStatusSerializer(serializers.Serializer):
             case PaymentStatusEnum.REFUNDED:
                 instance.refund_order()
             case PaymentStatusEnum.SUCCESS:
-                instance.mark_as_completed()
+                instance.mark_as_completed(self.context)
             case PaymentStatusEnum.FLAGGED:
                 instance.mark_as_issue()
             case PaymentStatusEnum.INITIATED:

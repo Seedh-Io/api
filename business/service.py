@@ -20,8 +20,9 @@ class BusinessService(BaseService):
             business = BusinessModel.objects.get(id=business_id)
         except Exception as e:
             raise NotFound("Business Not found")
-        business_obj = ActivatePackageForBusiness(data={"package_id": package_id, "expiry_date_time": expiry_date_time},
-                                                  context=self.context, instance=business)
+        business_obj = ActivatePackageForBusiness(
+            data={"active_package_id": package_id, "active_package_expiry_date_time": expiry_date_time},
+            context=self.context, instance=business)
         business_obj.is_valid(raise_exception=True)
         business_obj.save()
         return business_obj.data

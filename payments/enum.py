@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 from backend_api.helpers.enum_helper import BaseEnum
 
 
@@ -30,7 +32,18 @@ class PaymentStatusEnum(BaseEnum):
     FLAGGED = ("Flagged", 60)
 
 
-class RazorpayStatusEnum(BaseEnum):
+class PGStateEnumBase(BaseEnum):
+
+    @classmethod
+    @abstractmethod
+    def search_by_pg_state(cls, value: str) -> 'PGStateEnumBase': pass
+
+    @property
+    @abstractmethod
+    def payment_state(self) -> PaymentStatusEnum: pass
+
+
+class RazorpayStatusEnum(PGStateEnumBase):
     CREATED = ("Created", (1, "created", PaymentStatusEnum.INITIATED))
     ATTEMPTED = ("Attempted", (2, "attempted", PaymentStatusEnum.PROCESSING))
     FAILED = ("Failed", (3, "failed", PaymentStatusEnum.FAILED))
@@ -47,7 +60,7 @@ class RazorpayStatusEnum(BaseEnum):
         return self.data[1]
 
     @classmethod
-    def search_by_razorpay_status(cls, value) -> 'RazorpayStatusEnum':
+    def search_by_pg_state(cls, value) -> 'RazorpayStatusEnum':
         for key in cls:
             if key.data[1] == value:
                 return key

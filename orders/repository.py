@@ -1,10 +1,11 @@
 import logging
 
+from backend_api.helpers.service_helper import BaseService
 from orders.models import OrderModel
 from rest_framework.exceptions import NotFound
 
 
-class OrdersRepository:
+class OrdersRepository(BaseService):
 
     @staticmethod
     def get_order_by_id(order_id):

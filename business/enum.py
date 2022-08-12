@@ -29,4 +29,3 @@ class BusinessStatusEnum(BaseEnum):
 
 class BusinessReferenceTypeEnum(BaseEnum):
     ORDER = ("Order", 1)
-    RECHARGE = ("Recharge", 2)
