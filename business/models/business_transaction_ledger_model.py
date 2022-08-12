@@ -18,3 +18,4 @@ class BusinessTransactionLedgerModel(BaseModelFields, models.Model):
     class Meta:
         managed = True
         db_table = str(AppConfig.name) + "_" + "transaction_ledger"
+        unique_together = (('reference_type', 'reference_id', 'is_credit'),)
