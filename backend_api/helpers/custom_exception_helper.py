@@ -13,9 +13,12 @@ def extract_message_from_data(data: [dict, list, tuple]):
             return "error_not_found", "no_error"
 
 
-def extract_message_code_from_exception(response: dict):
-    for key in response:
-        return extract_message_from_data(response[key])
+def extract_message_code_from_exception(response: dict | list):
+    if type(response) == list:
+        return extract_message_from_data(response[0])
+    else:
+        for key in response:
+            return extract_message_from_data(response[key])
 
 
 def custom_exception_handler(exc, context):

@@ -2,6 +2,7 @@ import logging
 
 from rest_framework import serializers
 
+from backend_api.constants.messages import Messages
 from payments.enum import PaymentProvidersEnum, PaymentStatusEnum
 from payments.service_utils import OrderUtils
 from payments.models import PaymentsModel
@@ -14,6 +15,8 @@ class UserPaymentVerificationSerializer(serializers.Serializer):
     payment_verified = serializers.BooleanField(read_only=True)
 
     def update(self, instance: PaymentsModel, validated_data):
+        if instance.status not in [PaymentStatusEnum.INITIATED.val, PaymentStatusEnum.PROCESSING.val]:
+            raise serializers.ValidationError(Messages.payment_already_verified())
         provider = PaymentProvidersEnum.search_by_value(instance.provider)
         provider_obj = provider.obj
         success = validated_data["success"]

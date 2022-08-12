@@ -35,3 +35,7 @@ class Messages:
     @staticmethod
     def error_in_initiating_payment():
         return "Some error in initiating payment"
+
+    @staticmethod
+    def payment_already_verified():
+        return "Payment Already verified. Cannot verify again."
