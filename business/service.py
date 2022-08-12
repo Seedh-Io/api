@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from rest_framework.exceptions import NotFound
 
 from backend_api.helpers.service_helper import BaseService
-from business.models import BusinessModel
+from business.models import BusinessModel, BusinessTransactionLedgerModel
 from business.serializers.business_serializers import CreateBusinessSerializers, ActivatePackageForBusiness
 from users.models import UserModel
 
@@ -26,3 +28,18 @@ class BusinessService(BaseService):
         business_obj.is_valid(raise_exception=True)
         business_obj.save()
         return business_obj.data
+
+    def add_credits_by_order(self, business_id: str, credit: int, expiry_date_time: datetime | None,
+                             reference_id: str) -> BusinessTransactionLedgerModel:
+        from business.serializers import AddCreditSerializer
+        from business.enum import BusinessReferenceTypeEnum
+        ledger_obj = AddCreditSerializer(context=self.context, data={
+            "reference_id": reference_id,
+            "reference_type": BusinessReferenceTypeEnum.ORDER.val,
+            "credits": credit,
+            "expiry_date_time": expiry_date_time,
+            "business": business_id
+        })
+        ledger_obj.is_valid(raise_exception=True)
+        ledger_obj.save()
+        return ledger_obj.instance

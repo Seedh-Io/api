@@ -7,7 +7,6 @@ from payments.dto import PaymentProviderResponseDTO
 from payments.enum import PaymentStatusEnum, PGStateEnumBase
 from payments.enum import PaymentProvidersEnum, SupportedPaymentCurrenciesEnum
 from payments.models import PaymentsModel
-from payments.serializers import PaymentSerializer
 
 
 class BaseProvider(ABC):
@@ -30,12 +29,6 @@ class BaseProvider(ABC):
                      extra={"payment": payment.pk, "success": success, "response": response})
         pg_status = self._verify_payment(payment.pk, success, response)
         payment_state = pg_status.payment_state
-        payment_obj = PaymentSerializer(instance=payment, partial=True, data={
-            "status": payment_state.val
-        })
-        payment_obj.is_valid(raise_exception=True)
-        payment_obj.save()
-        payment = payment_obj.instance
         _ = self._update_status(payment.provider_id, pg_status)
         return payment_state
 

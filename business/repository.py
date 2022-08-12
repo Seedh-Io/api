@@ -2,10 +2,11 @@ import logging
 
 from rest_framework.exceptions import NotFound
 
+from backend_api.helpers.service_helper import BaseService
 from business.models import BusinessModel
 
 
-class BusinessRepository:
+class BusinessRepository(BaseService):
 
     @staticmethod
     def get_active_business_for_user(user_id: str) -> None | BusinessModel:

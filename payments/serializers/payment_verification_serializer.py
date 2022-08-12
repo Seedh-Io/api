@@ -1,5 +1,6 @@
 import logging
 
+from django.db import transaction
 from rest_framework import serializers
 
 from backend_api.constants.messages import Messages
@@ -34,8 +35,15 @@ class UserPaymentVerificationSerializer(serializers.Serializer):
         else:
             payment_status = PaymentStatusEnum.FAILED
         try:
-            logging.info("order_update_initiated", extra={"payment_id": instance.pk, "success": success})
-            OrderUtils(context=self.context).update_order_state(instance.order_id, payment_status)
+            with transaction.atomic():
+                logging.info("order_update_initiated", extra={"payment_id": instance.pk, "success": success})
+                from payments.serializers import PaymentSerializer
+                payment_obj = PaymentSerializer(instance=instance, partial=True, data={
+                    "status": payment_status.val
+                })
+                payment_obj.is_valid(raise_exception=True)
+                payment_obj.save()
+                OrderUtils(context=self.context).update_order_state(instance.order_id, payment_status)
             payment_verified = True
         except Exception as e:
             logging.error("order_update_failed",

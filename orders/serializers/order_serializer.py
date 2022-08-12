@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 from rest_framework import serializers
 
+from backend_api.helpers.currency_helper import CurrencyHelper
 from business.models import BusinessModel
 from orders.enum import OrderTypeEnum
 from orders.models import OrderModel
@@ -18,7 +19,7 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only_fields = ('order_id',)
 
     def validate_order_type(self, order_type):
-        package_id = self.initial_data['package_id']
+        package_id = self.initial_data.get('package_id')
         from orders.enum import OrderTypeEnum
         if package_id is None and order_type == OrderTypeEnum.PACKAGE.val:
             raise serializers.ValidationError({"package_id": "Package id is required"})
@@ -81,8 +82,8 @@ class BaseOrderSerializerMixin(serializers.Serializer):
             "order_type": self.get_order_type().val,
         }
 
-    def set_order_data(self, order_data):
-        self.order_data = order_data
+    def set_order_data(self, order_data: dict):
+        self.order_data = {**order_data, **self.get_base_order_data()}
 
     def create(self, validated_data):
         order = self.create_order()
@@ -123,7 +124,6 @@ class PackageOrderSerializer(BaseOrderSerializerMixin):
             "list_price_in_cents": package.list_price_in_cents,
             "sale_price_in_cents": package.selling_price_in_cents,
             "offer_discount_in_cents": package.list_price_in_cents - package.selling_price_in_cents,
-            **self.get_base_order_data()
         })
         return attrs
 
@@ -147,8 +147,8 @@ class RechargeOrderSerializer(BaseOrderSerializerMixin):
         recharge_amount = attrs['recharge_amount']
 
         self.set_order_data({
-            "list_price_in_cents": recharge_amount,
-            "sale_price_in_cents": recharge_amount,
+            "list_price_in_cents": CurrencyHelper.get_amount_to_cents(recharge_amount),
+            "sale_price_in_cents": CurrencyHelper.get_amount_to_cents(recharge_amount),
             "offer_discount_in_cents": 0,
         })
         return attrs

@@ -9,6 +9,7 @@ from backend_api.helpers.datetime_helper import DateTimeHelper
 from orders.apps import OrdersConfig as AppConfig
 from orders.enum import OrderStateEnum, OrderTypeEnum
 from users.models import UserModel
+from orders.helper import OrdersHelper
 
 
 class OrderManager(BaseModelManager):
@@ -50,23 +51,22 @@ class OrderModel(BaseModelFields, models.Model):
                 source=[OrderStateEnum.PROCESSING.val, OrderStateEnum.ISSUE.val, OrderStateEnum.FAILED.val],
                 target=OrderStateEnum.COMPLETED.val, on_error=OrderStateEnum.FAILED.val)
     def mark_as_completed(self, context=None):
+        from orders.service_utils import BusinessUtils
+
         logging.info("mark_order_as_completed", extra={"order_id": self.pk, })
 
-        def add_credit_for_business(credit):
-            pass
-
         from orders.service_utils import PackagesUtils
-        package = PackagesUtils().get_package_by_id(self.package_id) if self.package_id else None
+        credit = 0
+        credit_expiry_date_time = None
         if self.order_type == OrderTypeEnum.PACKAGE.val:
+            package = PackagesUtils().get_package_by_id(self.package_id) if self.package_id else None
             expiry_time = DateTimeHelper.add_seconds_to_date(package.duration_in_seconds)
-            if package.default_credits > 0:
-                add_credit_for_business(package.default_credits)
-            from orders.service_utils import BusinessUtils
+            credit = package.default_credits
             BusinessUtils(context=context).active_package_for_business(self.business_id, self.package_id, expiry_time)
         else:
-            credit = package.get_credits_when_recharge(
-                self.list_price_in_cents) if package else self.list_price_in_cents
-            add_credit_for_business(credit)
+            credit = OrdersHelper.get_recharge_credits(self.list_price_in_cents, self.business_id, check_package=True)
+
+        _ = self.__add_credits(context, credit, credit_expiry_date_time)
 
     @transition(field=status, source=OrderStateEnum.COMPLETED.val, target=OrderStateEnum.REFUNDED.val)
     def refund_order(self, user: UserModel):
@@ -76,3 +76,9 @@ class OrderModel(BaseModelFields, models.Model):
     @transition(field=status, source=OrderStateEnum.PROCESSING.val, target=OrderStateEnum.FAILED.val)
     def mark_as_failed(self):
         logging.info("order_failed", extra={"order_id": self.pk})
+
+    def __add_credits(self, context, credit, expiry_date_time):
+        if credit > 0:
+            from orders.service_utils import BusinessUtils
+            return BusinessUtils(context=context).add_credits_by_order(self.business_id, credit, expiry_date_time,
+                                                                       self.pk)
